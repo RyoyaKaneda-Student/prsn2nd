@@ -1,0 +1,202 @@
+%\documentstyle[epsf, twocolumn]{jarticle}       %LaTeX2e仕様
+\documentclass[twocolumn]{jarticle}     %pLaTeX2e仕様(platex. exeの場合)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  基本バージョン
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setlength{\topmargin}{-45pt}
+%\setlength{\oddsidemargin}{0cm}
+\setlength{\oddsidemargin}{-7.5mm}
+%\setlength{\evensidemargin}{0cm}
+\setlength{\textheight}{24.1cm}
+%setlength{\textheight}{25cm}
+\setlength{\textwidth}{17.4cm}
+%\setlength{\textwidth}{172mm}
+\setlength{\columnsep}{11mm}
+
+\kanjiskip =.07zw plus.5pt minus.5pt
+
+
+% 【節が変わるごとに (1. 1)(1. 2) … (2. 1)(2. 2) と数式番号をつけるとき】
+%\makeatletter
+%\renewcommand{\theequation}{%
+%\thesection. \arabic{equation}} %\@addtoreset{equation}{section}
+%\makeatother
+
+%\renewcommand{\arraystretch}{0. 95} 行間の設定
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[dvipdfm]{graphicx}   %pLaTeX2e仕様(\documentstyle ->\documentclass)
+\usepackage{here}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\addbibresource{index.bib}
+\bibliographystyle{junsrt} %プリアセンブル的なナニカ
+\begin{document}
+
+\twocolumn[
+\noindent
+
+\hspace{1em}
+令和 2 年 12 月 32 日(月) 後期研究会 発表資料
+\hfill
+\ \ B4 金田燎弥
+
+\vspace{2mm}
+
+\hrule
+
+\begin{center}
+{\Large \bf BERT による分散表現を用いた......}
+\end{center}
+
+
+\hrule
+\vspace{3mm}
+]
+
+% ここから 文章 Start!
+\section{はじめに}
+近年, 機械学習の発展に伴い, 自然言語処理の分野においても
+機械学習を用いた手法が大きな成果を上げている.  
+そして, 自然言語処理のタスクの 1 つである文章生成においても, 次々に新しいモデルが公開されており, 
+1 文においては人間と遜色ない文の生成をすることが可能となっている. 
+しかし, これらのモデルは単語間の関係性を考慮しているものが多く, 
+これらのモデルで複数文からなる文章を作成したときには, 
+文同士の関係を考慮しない文章が生成されてしまうため, 
+どこか違和感のある文章になってしまうことが多々ある. \par
+以上を背景として, 本研究では複数文からなる文章の生成という観点から, 文同士の関係性を推定することを目標とした. 
+文同士の関係性に明確な定義はないが, 文同士の間にある接続詞はそれらを考慮する重要な指標になる. 
+そこで本稿では, 文章間で接続詞がついている文章を扱い, 
+それらの文章の関係を接続詞を基にいくつかの種類に分類して, それを推定して精度を確認した. 
+そして, 正解でーたと不正解データを分析することで, 文同士の関係において重要な要素について考察した. 
+文章の分散表現を得る手法としては, 高い精度が示されている汎用言語モデル BERT を用いた. 
+
+\section{要素技術}
+
+\subsection{BERT}
+Bidirectional Encoder Representations from Transformers (BERT)
+ \cite{devlin2018bert} は, 複数の双方向 Transformer に
+基づく汎用言語モデルであり, 2018 年に Google が発表した言語モデルである.
+これまでの言語モデルは特定の学習タスクに対して 1 つのモデルを用いてきたが,
+BERT は大規模コーパスに対して事前学習を施して, 各タスクに対してファインチューニングをすることで,
+さまざまなタスクに柔軟に対応することができる.
+事前学習には入力の一部の単語を ``[MASK]'' に置き換えてその元単語を予測するように訓練するタスクと 2 文を
+入力としてその連続性を識別するように訓練するタスクが用いられる.
+本稿では, 京都大学から公開されている, 
+日本語 Wikipedia より全 1,800 万文を用いて事前学習されたモデル
+\footnote{http:\slash\slash{}nlp.ist.kyoto-u.ac.jp\slash{}index.php}
+を使用した.
+BERT に文章を入力する際には, 文章の先頭の先頭に ``[CLS]'' トークンを付与する.
+BERT は単語ごとの分散表現を出力するが, 
+``[CLS]'' トークンに対する出力を文章全体の分散表現として扱うことができる.
+また, 2 文を扱う際には, 文章の間に ``[SEP]'' トークンを付与する.
+
+\section{接続詞について}
+接続詞は接続語句のひとつであり, 文章の首尾一貫性を保つうえで重要な要素だとされる. 
+文章内の文と文とをつなぐ形式を「文の連接」という. 
+市川は文の連接を接続語句と指示詞の２つでなされるとして, その連接関係の類型を 8 つに分類した. 
+表 \ref{} にその分類名と属する接続詞の一例を挙げる. 
+なお, 連鎖型は接続語句では用いられない. 
+本研究では, その区分にのっとり接続詞を分けた. 
+
+
+\section{データセット}
+\subsection{使用データ}
+本稿では叙述的な文章として毎日新聞データセット 
+\footnote{http:\slash\slash{}www.nichigai.co.jp\slash{}sales\slash{}mainichi\slash{}mainichi-data.html}
+の新聞記事を用いた. 
+このデータセットにはジャンルごとに 2008 年から 2012 年までの記事がある. 
+そのなかのジャンルが 1 面, 2 面, 3 面のものを用いた. 
+
+\section{数値実験}
+\section{数値実験}
+本稿では叙述的な文章において文章の連続性の推定の精度の確認を目的とする.
+そこで, 順序付きの 2 文が正しい順序で連続するか
+否かの 2 クラス分類問題で識別し, その精度を accuracy および F 値 によって評価した.
+\subsection{実験準備}
+新聞記事の1 面, 2 面, 3 面 の記事を基に実験用データを用意する.
+まず, それぞれの記事を各パラグラフに分け, 先頭に接続詞があるパラグラフとその前のパラグラフをとって 1 つの文とした.
+各文に対し, Jumann++ \footnote{http:\slash\slash{}nlp.ist.i.kyoto-u.ac.jp\slash{}index.php?JUMAN++}
+によって単語ごとに分けた単語列 $v_{\rm words}$ を作った.
+その単語列の先頭に ``[CLS]'' トークンを付与し, 2 文の間に ``[SEP]'' トークンを付与した.
+2 つのパラグラフの間に``[PAD]'' トークンを加え, パラグラフ間の接続詞を ``[MASK]'' トークンにかえた.
+そして各単語に対応する id もしくは未知語を表す id に変換して, それらを繋げたものを各文の id 列 $v_{{\rm ids}}$ とした.
+今回は, その接続詞が逆接のものにラベル 1 をつけて, そうでないものにラベル 0 をつけた.
+
+\subsection{実験}
+まず, データセットの各記事に対して実験準備の処理を施し, ラベル 1, ラベル 0 の文を作る.
+ラベル 1 の文が n こ, ラベル 2 の文が m ことなった. 
+その文のラベルを推測するための分散表現を得る手法を 3 つ作った. \par
+まず, 一つ目の手法として, 2 パラグラフをそのまま BERT の入力として, 得られた各単語の分散表現のうち, 
+パラグラフ間の接続詞の部分, すなわち ``[MASK]'' に置き換わっている部分の単語のベクトルを得て, その分散表現を MLP に入力した. 
+この手法を実験 1 とする.  \par
+次に, 2 パラグラフをそのまま BERT の入力として, 得られた各単語の分散表現のうち, 
+文の分散表現, すなわち ``[CLS]'' に置き換わっている部分の単語のベクトルを得て, その分散表現を MLP に入力した. 
+この手法を実験 2 とする. \par
+最後に, 各パラグラフを BERT の入力として, 得られた各単語の分散表現のうち, 
+それぞれの文の分散表現, すなわち ``[CLS]'' に置き換わっている部分の単語のベクトルを得て, 
+2 つのパラグラフの分散表現を結合して, それを MLP に入力した. 
+この手法を実験 3 とする. \par
+表 \ref{mlph} に MLP の学習時のパラメータを示す.
+なお,  学習率, 最適化関数の値は optuna によってそれぞれ最適化した. 
+表 \ref{optu1} に実験の各モデルに対する学習率, 最適化関数を示す. 
+データ数がそこまで多くないため, 5 分割交差検証をして, 平均値および誤差を確認した. 
+
+\begin{table}[t] %MLP
+	\begin{center}
+		\caption{実験で用いた MLP のパラメータ}
+		\label{mlph}
+		\small
+		\begin{tabular}{|c|c|} \hline
+			パラメータ			& 値						\\ \hline \hline
+			入力層の次元数			& 分散表現の次元数 \\ \hline
+			隠れ層の次元数      	& 768				\\ \hline
+			出力層の次元数			& 2 						\\ \hline
+			バッチサイズ			& 64 						\\ \hline
+			活性化関数(隠れ層)		& ReLU 					\\ \hline
+			活性化関数(出力層)		& softmax 				\\ \hline
+			目的関数				& categorical cross entropy 	\\ \hline
+		\end{tabular}
+	\end{center}
+	\begin{center}
+		\caption{実験によって調整したパラメータ}
+		\label{optu1}
+		\small
+		\begin{tabular}{|c|c|c|c|c|} \hline
+            パラメータ			 & 実験 1 & 実験 2 & 実験 3 &探索空間 \\ \hline \hline
+            分散表現の次元数    & 768 & 768 & 1536 & _ \\ \hline
+			学習率				& $8.954 \times 10^{-3}$ & $1.000 \times 10^{-5}$& $8.954 \times 10^{-3}$ & $1.000 \times 10^{-5}$  $1.000 \times 10^{-2}$  \\ \hline
+			最適化関数			& Adam & Adam & Adam &Adam or SVM \\ \hline
+		\end{tabular}
+	\end{center}
+
+\end{table}
+
+\subsection{実験結果}
+表 \ref{} にそれぞれの実験の Accuracy, F 値の平均値および標準偏差を示す. 
+\begin{table}[ht] %MLP
+	\begin{center}
+		\caption{実験結果}
+		\label{data}
+		\begin{tabular}{|c|c|c|}
+			\hline
+			実験 &Accuracy& F \\ \hline \hline
+			1  & 0.7140 & 0.7246  \\ \hline
+			1 分散 & 0.0001 & 0.0001  \\ \hline
+			2  & 0.6409 & 0.6446 \\ \hline
+			2 分散 & 0.0002 & 0.0001  \\ \hline
+			3  & 0.6885 & 0.6862\\ \hline
+			3 分散 & 0.0004 & 0.0008  \\ \hline
+		\end{tabular}
+	\end{center}
+\end{table}
+\section{実験結果に対する分析}
+\section{まとめと今後の課題} 
+
+\bibliography{index}
+\end{document}
