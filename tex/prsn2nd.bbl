@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{devlin2018bert}
+Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova.
+\newblock Bert: Pre-training of deep bidirectional transformers for language
+  understanding.
+\newblock {\em arXiv preprint arXiv:1810.04805}, 2018.
+
+\bibitem{ichikawa}
+市川孝.
+\newblock 国語教育のための文章論概論.
+\newblock 教育出版, 1978.
+
+\end{thebibliography}
